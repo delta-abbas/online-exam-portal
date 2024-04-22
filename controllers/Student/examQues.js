@@ -193,6 +193,47 @@ module.exports.submitAns = async (req, res) => {
         const student = await StudentPerformance.findById(performance._id);
         const date = student.created_at.toLocaleDateString();
         const pfss = student.vedrict;
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASSWORD
+            }
+        });
+
+        // Send email
+        const info = await transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to:  email,
+            subject: `Your ${examname} Scorecard is Ready for Review!`,
+            text: `Congratulations! Your exam scorecard is now available for review. 
+                    Dive in to see your results and performance breakdown. 
+                    Access your scorecard now to track your progress and plan your next steps. 
+                    Best of luck on your academic journey!`,
+            html: `
+            <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="background-color: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                    <h2 style="color: #333;">Exam Scorecard</h2>
+                    <h3 style="color: #333;">Exam Details:</h3>
+                    <ul>
+                        <li><strong>Exam Name:</strong> ${examname}</li>
+                        <li><strong>Exam Date:</strong> ${date}</li>
+                    </ul>
+                    <h3 style="color: #333;">Student Details:</h3>
+                    <ul>
+                        <li><strong>Student Name:</strong> ${username}</li>
+                    </ul>
+                    <h3 style="color: #333;">Score:</h3>
+                    <ul>
+                        <li><strong>Total Marks:</strong> ${totalMarks}</li>
+                        <li><strong>Passing Marks:</strong> ${passingMarks}</li>
+                        <li><strong>Score:</strong> ${score}</li>
+                        <li><strong>Verdict:</strong> ${vedrict}</li>
+                    </ul>
+                </div>
+            </div>
+        `
+        });
 
         res.render("student/score.ejs",{totalQuestions,score,skipped,incorrect,Answers,username,date,userid,selectedOptions,actualQuestions,examname,pfss});
     }catch(error) {
